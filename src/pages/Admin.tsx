@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useProjects } from "../context/ProjectsContext";
+import { getAuth, signOut } from "firebase/auth";
 
 export default function Admin() {
   const { addProject } = useProjects();
+  const auth = getAuth();
 
   // États du formulaire
   const [title, setTitle] = useState("");
@@ -13,6 +15,7 @@ export default function Admin() {
   const [techTags, setTechTags] = useState("");
   const [codeSnippet, setCodeSnippet] = useState("");
 
+  // Soumission du formulaire
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -32,14 +35,13 @@ export default function Admin() {
         description,
         category,
         imageUrl,
-        externalLink: externalLink || undefined, // bouton Visit Project pour toutes les catégories
+        externalLink: externalLink || undefined,
         tags: [],
         techTags: category === "code" && techTags ? techTags.split(",").map(t => t.trim()) : undefined,
         codeSnippet: category === "code" && codeSnippet ? codeSnippet : undefined,
       });
 
       alert("✅ Projet ajouté !");
-      // Reset form
       setTitle("");
       setDescription("");
       setCategory("image");
@@ -53,9 +55,24 @@ export default function Admin() {
     }
   };
 
+  // Déconnexion
+  const handleLogout = async () => {
+    await signOut(auth);
+    window.location.href = "/"; // redirige vers la page d'accueil
+  };
+
   return (
     <div className="max-w-md mx-auto p-6 bg-gray-50 rounded shadow mt-6">
-      <h1 className="text-2xl font-bold mb-4">Ajouter un projet</h1>
+      {/* Barre supérieure avec titre et bouton logout */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Ajouter un projet</h1>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+        >
+          Logout
+        </button>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
