@@ -15,22 +15,35 @@ export default function ProjectPage() {
 
   useEffect(() => {
     if (!id) return;
+
     const fetchProject = async () => {
       const ref = doc(db, "projects", id);
       const snapshot = await getDoc(ref);
-      if (snapshot.exists()) setProject(snapshot.data() as Project);
+      if (snapshot.exists()) {
+        setProject({ id: snapshot.id, ...(snapshot.data() as Omit<Project, "id">) } as Project);
+      }
     };
+
     fetchProject();
   }, [id]);
 
-  if (!project) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">Loading...</div>;
+  if (!project) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+        Loading...
+      </div>
+    );
+  }
 
   const handleVote = () => {
+    if (!project?.id) return;
+
     const votedProjects: string[] = JSON.parse(localStorage.getItem("votedProjects") || "[]");
     if (votedProjects.includes(project.id)) {
       alert("You already voted for this project!");
       return;
     }
+
     vote(project.id, project.votes);
     votedProjects.push(project.id);
     localStorage.setItem("votedProjects", JSON.stringify(votedProjects));
@@ -40,33 +53,43 @@ export default function ProjectPage() {
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <button
         onClick={() => navigate(-1)}
-        className="mb-4 bg-gray-700 px-4 py-2 rounded hover:bg-gray-600"
+        className="mb-4 bg-gray-700 px-4 py-2 rounded hover:bg-gray-600 transition"
       >
         ← Back
       </button>
 
       <div className="max-w-3xl mx-auto bg-gray-800 rounded-lg shadow-lg overflow-hidden">
         <img src={project.imageUrl} alt={project.title} className="w-full h-64 object-cover" />
+
         <div className="p-6">
           <h1 className="text-3xl font-bold mb-4">{project.title}</h1>
-          <p className="mb-4">{project.description}</p>
+          <p className="mb-4 text-gray-300">{project.description}</p>
 
           {project.category === "code" && Array.isArray(project.techTags) && project.techTags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {project.techTags.map((tag, idx) => (
-                <span key={idx} className="bg-green-600 px-2 py-1 rounded text-xs">{tag}</span>
+                <span key={idx} className="bg-green-600 px-2 py-1 rounded text-xs">
+                  {tag}
+                </span>
               ))}
             </div>
           )}
 
           {project.category === "code" && project.codeSnippet && (
-            <SyntaxHighlighter
-              language="tsx"
-              style={oneDark}
-              className="rounded mb-4 max-h-64 overflow-auto"
-            >
-              {project.codeSnippet}
-            </SyntaxHighlighter>
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold mb-2 text-white">Code Snippet</h3>
+              <div className="rounded-lg overflow-hidden border border-gray-700 shadow-inner">
+                <SyntaxHighlighter
+                  language="tsx"
+                  style={oneDark}
+                  wrapLines
+                  wrapLongLines
+                  className="max-h-96 overflow-auto text-sm font-mono"
+                >
+                  {project.codeSnippet.trim()}
+                </SyntaxHighlighter>
+              </div>
+            </div>
           )}
 
           {project.externalLink && (

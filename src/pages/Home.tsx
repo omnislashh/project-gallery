@@ -1,93 +1,62 @@
-import React from "react";
+import { useState } from "react";
 import { useProjects } from "../context/ProjectsContext";
-import { Link } from "react-router-dom";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import ProjectCard from "../components/ProjectCard";
 
 export default function Home() {
-  const { projects, vote } = useProjects();
+  const { projects } = useProjects();
+  const [showCV, setShowCV] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
-      <header className="p-6 flex flex-col items-center space-y-2 border-b border-gray-700">
-        <img src="/elk_logo_black copie.jpg" alt="Logo" className="h-32 w-auto" />
-        <h1 className="text-3xl font-bold">Project Gallery</h1>
-        <p className="text-gray-400 text-center max-w-xl">
-          Welcome! Browse creative projects including images and code. Click a project to see details and like your favorites!
+      <header className="flex flex-col items-center py-8">
+        <img
+          src="/elk_logo_black copie.jpg"
+          alt="Logo"
+          className="h-32 w-auto mb-4"
+        />
+        <h1 className="text-4xl font-bold mb-2">Project Gallery</h1>
+        <p className="text-gray-400 max-w-xl text-center mb-6">
+          Explore creative works — from design to code.  
+          Vote for your favorites and discover new ideas!
         </p>
+
+        <button
+          onClick={() => setShowCV(true)}
+          className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-white font-semibold transition"
+        >
+          View CV
+        </button>
       </header>
 
-      {/* Projects grid */}
-      <main className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((p) => (
-          <Link
-            key={p.id}
-            to={`/project/${p.id}`}
-            className="bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col hover:scale-105 transform transition"
-          >
-            {/* Image for all projects */}
-            <img
-              src={p.imageUrl}
-              alt={p.title}
-              className="h-48 w-full object-cover"
-            />
-
-            <div className="p-4 flex flex-col flex-1">
-              <h2 className="text-xl font-bold mb-2">{p.title}</h2>
-              <p className="text-gray-300 flex-1">{p.description}</p>
-
-              {/* Tech tags */}
-              {Array.isArray(p.techTags) && p.techTags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {p.techTags.map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className="bg-green-600 text-white text-xs px-2 py-1 rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Code snippet */}
-              {p.category === "code" && p.codeSnippet && (
-                <SyntaxHighlighter
-                  language="tsx"
-                  style={oneDark}
-                  className="mt-2 rounded max-h-40 overflow-auto"
-                >
-                  {p.codeSnippet}
-                </SyntaxHighlighter>
-              )}
-
-              <div className="mt-4 flex items-center justify-between">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault(); // empêche la navigation
-                    vote(p.id, p.votes);
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-white text-sm"
-                >
-                  👍 {p.votes}
-                </button>
-
-                {p.externalLink && (
-                  <a
-                    href={p.externalLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline text-sm"
-                  >
-                    Open Project
-                  </a>
-                )}
-              </div>
-            </div>
-          </Link>
+      {/* Gallery */}
+      <main className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-6 pb-12">
+        {projects.map((project) => (
+          <ProjectCard key={project.id} project={project} />
         ))}
       </main>
+
+      {/* CV Modal */}
+      {showCV && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-xl w-full max-w-5xl relative shadow-xl">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowCV(false)}
+              className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm"
+            >
+              ✕ Close
+            </button>
+
+            {/* PDF Viewer */}
+            <iframe
+              src="/cv.pdf"
+              title="CV"
+              className="w-full h-[80vh] rounded-b-xl"
+            ></iframe>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

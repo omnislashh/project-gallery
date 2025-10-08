@@ -7,6 +7,7 @@ import AdminLogin from "./pages/AdminLogin";
 import ProjectPage from './pages/ProjectPage';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebase'; // Adjust the path if your firebase config is elsewhere
+import Footer from "./components/Footer";
 
 function ProtectedAdmin() {
   const [user, loading] = useAuthState(auth);
@@ -18,14 +19,20 @@ function ProtectedAdmin() {
 function App() {
   return (
     <ProjectsProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-        
-          <Route path="/project/:id" element={<ProjectPage />} />
-          <Route path="/admin" element={<ProtectedAdmin />} />
-        </Routes>
-      </Router>
+      <div className="min-h-screen flex flex-col bg-gray-900 text-white">
+        <Router>
+          <div className="flex-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/project/:id" element={<ProjectPage />} />
+              <Route path="/admin" element={<ProtectedAdmin />} />
+            </Routes>
+          </div>
+
+          <Footer />
+        </Router>
+      </div>
+
     </ProjectsProvider>
   );
 }
