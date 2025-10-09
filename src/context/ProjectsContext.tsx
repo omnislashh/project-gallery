@@ -63,7 +63,10 @@ export const ProjectsProvider: React.FC<{children: React.ReactNode}> = ({ childr
       // Lis les votes actuels depuis Firestore
       const snapshot = await getDoc(ref);
       if (!snapshot.exists()) return;
-
+      console.log("Vote pour :", id);
+      console.log("Doc ref :", ref.path);
+      console.log("Snapshot existe ?", snapshot.exists());
+      console.log("Data :", snapshot.data());
 
       // Atomic increment côté serveur
       await updateDoc(ref, { votes: increment(1) });

@@ -3,19 +3,18 @@ import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import type { Project } from "../types";
-import { useProjects } from "../context/ProjectsContext";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useVoteSystem } from "../hooks/useVoteSystem";
 
 export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { vote } = useProjects();
+  const { voteForProject, hasVoted } = useVoteSystem();
   const [project, setProject] = useState<Project | null>(null);
 
   useEffect(() => {
     if (!id) return;
-
     const fetchProject = async () => {
       const ref = doc(db, "projects", id);
       const snapshot = await getDoc(ref);
@@ -23,16 +22,12 @@ export default function ProjectPage() {
         setProject({ id: snapshot.id, ...(snapshot.data() as Omit<Project, "id">) } as Project);
       }
     };
-
     fetchProject();
   }, [id]);
 
   if (!project) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">Loading...</div>;
 
-  const handleVote = async (e?: React.MouseEvent) => {
-    e?.stopPropagation(); // pour la card
-    await vote(project.id);
-  };
+  const voted = hasVoted(project.id);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
@@ -49,46 +44,24 @@ export default function ProjectPage() {
           <h1 className="text-3xl font-bold mb-4">{project.title}</h1>
           <p className="mb-4 text-gray-300">{project.description}</p>
 
-          {project.category === "code" && Array.isArray(project.techTags) && project.techTags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {project.techTags.map((tag, idx) => (
-                <span key={idx} className="bg-green-600 px-2 py-1 rounded text-xs">{tag}</span>
-              ))}
-            </div>
-          )}
-
           {project.category === "code" && project.codeSnippet && (
             <div className="mb-6">
               <h3 className="text-xl font-semibold mb-2 text-white">Technical snippet</h3>
               <div className="rounded-lg overflow-hidden border border-gray-700 shadow-inner">
-                <SyntaxHighlighter
-                  language="tsx"
-                  style={oneDark}
-                  wrapLines
-                  wrapLongLines
-                  className="max-h-96 overflow-auto text-sm font-mono"
-                >
+                <SyntaxHighlighter language="tsx" style={oneDark} wrapLines wrapLongLines className="max-h-96 overflow-auto text-sm font-mono">
                   {project.codeSnippet.trim()}
                 </SyntaxHighlighter>
               </div>
             </div>
           )}
 
-          {project.externalLink && (
-            <a
-              href={project.externalLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mb-4 transition"
-            >
-              Visit Project
-            </a>
-          )}
-
           <div className="mt-4">
             <button
-              onClick={handleVote}
-              className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded transition"
+              onClick={() => voteForProject(project.id)}
+              disabled={voted}
+              className={`px-4 py-2 rounded transition ${
+                voted ? "bg-gray-600 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+              }`}
             >
               👍 {project.votes}
             </button>

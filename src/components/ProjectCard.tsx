@@ -1,17 +1,19 @@
-import { useProjects } from "../context/ProjectsContext";
 import { useNavigate } from "react-router-dom";
 import type { Project } from "../types";
+import { useVoteSystem } from "../hooks/useVoteSystem";
 
 type Props = { project: Project };
 
 export default function ProjectCard({ project }: Props) {
-  const { vote } = useProjects();
+  const { hasVoted, voteForProject } = useVoteSystem();
   const navigate = useNavigate();
 
   const handleVote = async (e?: React.MouseEvent) => {
-    e?.stopPropagation(); // pour la card
-    await vote(project.id);
+    e?.stopPropagation();
+    await voteForProject(project.id);
   };
+
+  const voted = hasVoted(project.id);
 
   return (
     <div
@@ -26,7 +28,12 @@ export default function ProjectCard({ project }: Props) {
         <div className="flex justify-between items-center mt-2">
           <button
             onClick={handleVote}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+            disabled={voted}
+            className={`px-3 py-1 rounded text-white transition ${
+              voted
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
+            }`}
           >
             👍 {project.votes}
           </button>
