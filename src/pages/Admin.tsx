@@ -62,7 +62,7 @@ export default function Admin() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-gray-50 rounded shadow mt-6">
+    <div className="max-w-md mx-auto p-6 bg-gray-50 rounded shadow mt-6 text-gray-900">
       {/* Barre supérieure avec titre et bouton logout */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Ajouter un projet</h1>

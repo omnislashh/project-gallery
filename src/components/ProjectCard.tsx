@@ -1,26 +1,16 @@
-import React from "react";
-import type { Project } from "../types";
 import { useProjects } from "../context/ProjectsContext";
 import { useNavigate } from "react-router-dom";
+import type { Project } from "../types";
 
-type Props = {
-  project: Project;
-};
+type Props = { project: Project };
 
 export default function ProjectCard({ project }: Props) {
   const { vote } = useProjects();
   const navigate = useNavigate();
 
-  const handleVote = (e: React.MouseEvent) => {
-    e.stopPropagation(); // pour ne pas déclencher le click sur la card
-    const votedProjects: string[] = JSON.parse(localStorage.getItem("votedProjects") || "[]");
-    if (votedProjects.includes(project.id)) {
-      alert("You already voted for this project!");
-      return;
-    }
-    vote(project.id, project.votes);
-    votedProjects.push(project.id);
-    localStorage.setItem("votedProjects", JSON.stringify(votedProjects));
+  const handleVote = async (e?: React.MouseEvent) => {
+    e?.stopPropagation(); // pour la card
+    await vote(project.id);
   };
 
   return (
@@ -32,6 +22,7 @@ export default function ProjectCard({ project }: Props) {
       <div className="p-4">
         <h2 className="text-xl font-bold mb-2 text-white">{project.title}</h2>
         <p className="text-gray-300 mb-2 line-clamp-3">{project.description}</p>
+
         <div className="flex justify-between items-center mt-2">
           <button
             onClick={handleVote}
@@ -39,6 +30,7 @@ export default function ProjectCard({ project }: Props) {
           >
             👍 {project.votes}
           </button>
+
           {project.externalLink && (
             <a
               href={project.externalLink}

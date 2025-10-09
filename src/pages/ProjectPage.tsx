@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
@@ -27,26 +27,11 @@ export default function ProjectPage() {
     fetchProject();
   }, [id]);
 
-  if (!project) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-        Loading...
-      </div>
-    );
-  }
+  if (!project) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">Loading...</div>;
 
-  const handleVote = () => {
-    if (!project?.id) return;
-
-    const votedProjects: string[] = JSON.parse(localStorage.getItem("votedProjects") || "[]");
-    if (votedProjects.includes(project.id)) {
-      alert("You already voted for this project!");
-      return;
-    }
-
-    vote(project.id, project.votes);
-    votedProjects.push(project.id);
-    localStorage.setItem("votedProjects", JSON.stringify(votedProjects));
+  const handleVote = async (e?: React.MouseEvent) => {
+    e?.stopPropagation(); // pour la card
+    await vote(project.id);
   };
 
   return (
@@ -60,7 +45,6 @@ export default function ProjectPage() {
 
       <div className="max-w-3xl mx-auto bg-gray-800 rounded-lg shadow-lg overflow-hidden">
         <img src={project.imageUrl} alt={project.title} className="w-full h-64 object-cover" />
-
         <div className="p-6">
           <h1 className="text-3xl font-bold mb-4">{project.title}</h1>
           <p className="mb-4 text-gray-300">{project.description}</p>
@@ -68,16 +52,14 @@ export default function ProjectPage() {
           {project.category === "code" && Array.isArray(project.techTags) && project.techTags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {project.techTags.map((tag, idx) => (
-                <span key={idx} className="bg-green-600 px-2 py-1 rounded text-xs">
-                  {tag}
-                </span>
+                <span key={idx} className="bg-green-600 px-2 py-1 rounded text-xs">{tag}</span>
               ))}
             </div>
           )}
 
           {project.category === "code" && project.codeSnippet && (
             <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-2 text-white">Code Snippet</h3>
+              <h3 className="text-xl font-semibold mb-2 text-white">Technical snippet</h3>
               <div className="rounded-lg overflow-hidden border border-gray-700 shadow-inner">
                 <SyntaxHighlighter
                   language="tsx"
